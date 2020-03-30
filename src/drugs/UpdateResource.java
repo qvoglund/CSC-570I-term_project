@@ -13,35 +13,98 @@ public class UpdateResource extends ServerResource {
 
     @Put
     public Representation update(Representation data) {
-	Status status = null;
-	String msg = null;
+		Status status = null;
+		String msg = null;
+	
+		// Extract the data from the POST body.
+		Form fr = new Form(data);
+		String sid = fr.getFirstValue("id");
+		String drug_name = fr.getFirstValue("drug");
+		String symptom = fr.getFirstValue("symptom");
+		String newSymptom = fr.getFirstValue("newSymptom");
+		String dosage = fr.getFirstValue("dosage");
+		String newDosage = fr.getFirstValue("newDosage");
+		String form = fr.getFirstValue("form");
+		String newForm = fr.getFirstValue("newForm");
+		String threeToSix = fr.getFirstValue("3to6");
+		String sixToTen = fr.getFirstValue("6to10");
+		String tenToFifteen = fr.getFirstValue("10to15");
+		String fifteenToTwenty = fr.getFirstValue("15to20");
+		String twentyToTwenty_nine = fr.getFirstValue("20to29");
+		DrugsDosesDB db = new DrugsDosesDB();
+		
+		if (sid == null && drug_name == null) {
+		    msg = "An ID and drug name must be provided.\n";
+		    status = Status.CLIENT_ERROR_BAD_REQUEST;
+		}
+		else if (symptom == null && form == null && dosage == null) {
+			msg = "A symptom, form, and dosage must be provided.\n";
+			status = Status.CLIENT_ERROR_BAD_REQUEST;
+		}
+		else {
+		    int id = Integer.parseInt(sid.trim());
+	
+			if (symptom == null && form == null && dosage == null) {
+			    Drug drug = Drugs.find(id);
+			    if (drug == null) {
+					msg = "There is no drug with ID " + id + "\n";
+					status = Status.CLIENT_ERROR_BAD_REQUEST;
+			    }
+			    else {
+					drug.setDrug(drug_name);
+					msg = "Drug " + id + " has been updated to '" + drug + "'.\n";
+					status = Status.SUCCESS_OK;
+			    }
+			} else {
+				Dose dose = Drugs.findDose(id, symptom, form, dosage);
+				if (dose == null) {
+					msg = "There is no dose with ID " + id + ", symptom " + symptom + ", and form " +
+							form + "\n";
+					status = Status.CLIENT_ERROR_BAD_REQUEST;
+				}
+				else {
+					Dose newDose = new Dose();
+					newDose.clone(dose);
 
-	// Extract the data from the POST body.
-	Form form = new Form(data);
-	String sid = form.getFirstValue("id");
-	String drug_name = form.getFirstValue("drug");
+					String drugId = dose.getDrugId();
+					newDose.setDrugId(drugId);
+					newDose.setSymptom(newSymptom == null ? symptom : newSymptom);
+					newDose.setDosage(newDosage == null ? dosage : newDosage);
+					newDose.setForm(newForm == null ? form : newForm);
+					newDose.setThreeToSix(threeToSix == null ? dose.getThreeToSix() : threeToSix);
+					newDose.setSixToTen(sixToTen == null ? dose.getSixToTen() : sixToTen);
+					newDose.setTenToFifteen(tenToFifteen == null ? dose.getTenToFifteen() : tenToFifteen);
+					newDose.setFifteenToTwenty(fifteenToTwenty == null ? dose.getFifteenToTwenty() : fifteenToTwenty);
+					newDose.setTwentyToTwenty_nine(twentyToTwenty_nine == null ? dose.getTwentyToTwenty_nine() : twentyToTwenty_nine);
 
-	if (sid == null || drug_name == null) {
-	    msg = "An ID and drug name must be provided.\n";
-	    status = Status.CLIENT_ERROR_BAD_REQUEST;
-	}
-	else {
-	    int id = Integer.parseInt(sid.trim());
-	    Drug drug = Drugs.find(id);
-	    if (drug == null) {
-		msg = "There is no drug with ID " + id + "\n";
-		status = Status.CLIENT_ERROR_BAD_REQUEST;
-	    }
-	    else {
-		drug.setDrug(drug_name);
-		msg = "Drug " + id + " has been updated to '" + drug + "'.\n";
-		status = Status.SUCCESS_OK;
-	    }
-	}
+					if (!Drugs.getDoseList().contains(newDose)) {
 
-	setStatus(status);
-	return new StringRepresentation(msg, MediaType.TEXT_PLAIN);
+						String sql = "UPDATE doses SET dosage = '" + newDose.getDosage() + "', form = '" + newDose.getForm() + "', symptom = '" + newDose.getSymptom() + "', 3to6 = '" + newDose.getThreeToSix() + "', 6to10 = '" + newDose.getSixToTen() +
+								"', 10to15 = '" + newDose.getTenToFifteen() + "', 15to20 = '" + fifteenToTwenty + "', 20to29 = '" + newDose.getTwentyToTwenty_nine() + "' WHERE id = " + drugId + " AND " +
+										"symptom = '" + symptom + "' AND dosage = '" + dosage + "' AND form = '" + form + "'";
+						db.insert(sql);
+						
+						Drug drug = Drugs.find(Integer.parseInt(newDose.getDrugId()));
+						Drugs.addDose(newDose);
+
+						msg = "Dose with drugId = " + drugId + ", symptom = " + newDose.getSymptom() + 
+								", form = " + newDose.getForm() +" updated. " + (threeToSix != null ? " 3to6 = " + threeToSix : "") +
+								(sixToTen != null ? " 6to10 = " + sixToTen : "") +
+								(tenToFifteen != null ? " 10to15 = " + tenToFifteen : "") +
+								(fifteenToTwenty != null ? " 15to20 = " + fifteenToTwenty : "") +
+								(twentyToTwenty_nine != null ? " 20to29 = " + twentyToTwenty_nine : "");
+					} else {
+						msg = "Dose information already exists.\n";
+					}
+							
+				}
+			}
+		}
+	
+		setStatus(status);
+		return new StringRepresentation(msg, MediaType.TEXT_PLAIN);
     }
+    
 }
 
 

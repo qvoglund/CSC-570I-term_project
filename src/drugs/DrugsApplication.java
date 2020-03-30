@@ -40,13 +40,13 @@ public class DrugsApplication extends Application {
 	*/
 	// Create the routing table.
 	Router router = new Router(getContext());
-        router.attach("/",            PlainResource.class);
+    router.attach("/",            PlainResource.class);
 	router.attach("/xml",         XmlAllResource.class);
 	router.attach("/xml/{id}",    XmlOneResource.class);
 	router.attach("/json",        JsonAllResource.class);
 	router.attach("/json/{id}",   JsonOneResource.class);
 	router.attach("/create",      CreateResource.class);
-	router.attach("/update",      UpdateResource.class);
+	router.attach("/update", UpdateResource.class);
 	router.attach("/delete/{id}", DeleteResource.class);
 	
         return router;

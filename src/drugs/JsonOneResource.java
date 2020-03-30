@@ -18,6 +18,7 @@ public class JsonOneResource extends ServerResource {
     public Representation toJson() {
     	// Extract the adage's id.
     	String sid = (String) getRequest().getAttributes().get("id");
+    	String doseId = (String) getRequest().getAttributes().get("doseId");
     	if (sid == null) return badRequest("No ID provided\n");
     		
     	int id;

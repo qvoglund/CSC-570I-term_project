@@ -7,7 +7,9 @@ import java.sql.*;
 public class Drugs {
 	
     private static CopyOnWriteArrayList<Drug> drugs;
+    private static CopyOnWriteArrayList<Dose> doses;
     private static AtomicInteger doseId;
+    
     public Drugs() {	}
 
     public static String toPlain() {
@@ -18,14 +20,15 @@ public class Drugs {
     }
     
     public static CopyOnWriteArrayList<Drug> getList() { return drugs; }
+    public static CopyOnWriteArrayList<Dose> getDoseList() { return doses; }
 
     // Support GET one operation.
     public static Drug find(int id) {
 		Drug drug = null;
 		for (Drug d : drugs) {
 		    if (d.getId() == id) {
-			drug = d;
-			break;
+				drug = d;
+				break;
 		    }
 		}	
 		return drug;
@@ -41,6 +44,18 @@ public class Drugs {
     	}
     	return drug;
     }
+    
+    public static Dose findDose(int id, String symptom, String form, String dosage) {
+    	Dose dose = null;
+    	for (Dose d : doses) {
+    		if (d.getDrugId().equals(String.valueOf(id)) && d.getSymptom().equals(symptom) &&
+    			d.getForm().equals(form) && d.getDosage().equals(dosage)) {
+    			dose = d;
+    			break;
+    		}
+    	}
+    	return dose;
+    }
 
     // Support POST operation.
     public static void add(int id, String drug_name) {
@@ -51,26 +66,31 @@ public class Drugs {
 		drugs.add(drug);
     }
 
-    public static void addDose(String id, String symptom, String dosage, String form, String threeToSix, String sixToTen, String tenToFifteen,
-    		String fifteenToTwenty, String twentyToTwenty_nine) {
+    public static void addDose(Dose ds) {
+    	int newId = -1;
     	
-    	int newId = doseId.incrementAndGet();
     	
     	Dose dose = new Dose();
-    	dose.setDrugId(id);
+    	if (ds.getDoseId() == null) {
+    		newId = doseId.incrementAndGet();
+    	} else {
+    		newId = Integer.parseInt(ds.getDoseId());
+    	}
     	dose.setDoseId(newId);
-    	dose.setSymptom(symptom);
-    	dose.setDosage(dosage);
-    	dose.setForm(form);
-    	dose.setThreeToSix(threeToSix);
-    	dose.setSixToTen(sixToTen);
-    	dose.setTenToFifteen(tenToFifteen);
-    	dose.setFifteenToTwenty(fifteenToTwenty);
-    	dose.setTwentyToTwenty_nine(twentyToTwenty_nine);
+    	dose.setDrugId(ds.getDrugId());
+    	dose.setSymptom(ds.getSymptom());
+    	dose.setDosage(ds.getDosage());
+    	dose.setForm(ds.getForm());
+    	dose.setThreeToSix(ds.getThreeToSix());
+    	dose.setSixToTen(ds.getSixToTen());
+    	dose.setTenToFifteen(ds.getTenToFifteen());
+    	dose.setFifteenToTwenty(ds.getFifteenToTwenty());
+    	dose.setTwentyToTwenty_nine(ds.getTwentyToTwenty_nine());
     	
-    	Drug drug = Drugs.find(Integer.parseInt(id));
-    	System.out.println("DRUG: " + drug + " DOSE: " + dose + "\n");
+    	Drug drug = Drugs.find(Integer.parseInt(ds.getDrugId()));
+
     	drug.addDoses(dose);
+    	doses.add(dose);
     }
     
     public static void initializeDatabase() {
@@ -78,57 +98,35 @@ public class Drugs {
     	if (drugs == null) {
     		
     		drugs = new CopyOnWriteArrayList<Drug>();
+    		doses = new CopyOnWriteArrayList<Dose>();
     		doseId = new AtomicInteger();
-	    	final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
-			final String DB_URL = "jdbc:mariadb://localhost:3306/drug_dosage";
-		
-			final String USER = "root";
-			final String PASS = "Spaceghost9";
-		
-			Connection conn = null;
-			Statement stmt = null;
+			
+			DrugsDosesDB db = new DrugsDosesDB();
+			
+			ResultSet rs = db.select("SELECT * FROM drugs");
 			
 			try {
-				Class.forName(JDBC_DRIVER);
-				System.out.println("INIT Database Connection\n");
-				System.out.println("test"+DriverManager.getConnection(DB_URL, USER, PASS));
-				conn = DriverManager.getConnection(DB_URL, USER, PASS);//
-				System.out.println("CONNECTED to Database: " + DB_URL + "\n");
-				stmt = conn.createStatement();
-		
-				String sql = "SELECT * FROM drugs";
-				ResultSet rs = stmt.executeQuery(sql);
 				while (rs.next()) {
-					//System.out.println("Adding: id '" + rs.getString("id") + "' drug '" + rs.getString("drug") + "'\n");
-					add(Integer.parseInt(rs.getString("id")), rs.getString("drug"));
+					Drugs.add(Integer.parseInt(rs.getString("id")), rs.getString("drug"));
 				}
 				
-				sql = "SELECT * FROM doses";
-				rs = stmt.executeQuery(sql);
+				rs = db.select("SELECT * FROM doses");
 				
-				ResultSetMetaData rsmd = rs.getMetaData();
-				while (rs.next()) {
-					//System.out.println("Adding: id '" + rs.getString("id") + "' ");
-					
-					for (int i = 1; i < rsmd.getColumnCount() + 1; i++) {
-						//System.out.print(rsmd.getColumnName(i) + ": " + rs.getString(i) + " ");	
-					}
-					System.out.println();
-					addDose(rs.getString("id"), rs.getString("symptom"), rs.getString("dosage"), rs.getString("form"), rs.getString("3to6"),
-							rs.getString("6to10"), rs.getString("10to15"), rs.getString("15to20"), rs.getString("20to29"));
+				Dose ds = new Dose();
+				while (rs.next()) {	
+					ds.setDrugId(rs.getString("id"));
+					ds.setSymptom(rs.getString("symptom"));
+					ds.setDosage(rs.getString("dosage"));
+					ds.setForm(rs.getString("form"));
+					ds.setThreeToSix(rs.getString("3to6"));
+					ds.setSixToTen(rs.getString("6to10"));
+					ds.setTenToFifteen(rs.getString("10to15"));
+					ds.setFifteenToTwenty(rs.getString("15to20"));
+					ds.setTwentyToTwenty_nine(rs.getString("20to29"));
+					Drugs.addDose(ds);
 				}
-			} catch (SQLException se) {
-				System.out.println("***SQL EXCEPTION***");
-				se.printStackTrace();
-			} catch (Exception e) {
-				System.out.println("***EXCEPTION***");
-				e.printStackTrace();
-			} finally {
-				try { if (stmt != null) { conn.close(); }
-				} catch (SQLException se) {}
-				try { if (conn != null) { conn.close(); }
-				} catch (SQLException se) { se.printStackTrace(); }
-			}
+			} catch (NumberFormatException e) { e.printStackTrace();
+			} catch (SQLException e) { e.printStackTrace(); }
     	}
     }
 }
