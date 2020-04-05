@@ -36,7 +36,7 @@ public class CreateResource extends ServerResource {
 		    msg = "No drug name was submitted\n";
 		    status = Status.CLIENT_ERROR_BAD_REQUEST;
 		}
-		else if ((exists = Drugs.find(drug)) != null && symptom == null) {
+		else if ((exists = Drugs.find(drug)) != null && symptom == null && dosage == null && form == null) {
 			msg = "Drug, " + exists.getDrug() + ", already exists in the database with id: " + exists.getId() + "\n";
 			status = Status.CLIENT_ERROR_BAD_REQUEST;
 		}
@@ -58,24 +58,36 @@ public class CreateResource extends ServerResource {
 		
 					if (rs.next()) {
 						drugId = rs.getInt("id");
-						System.out.println(drugId);
 						Drugs.add(drugId, drug);
 					    msg = "The drug, " + drug + ", with id: " + drugId + " has been added.\n";
 					}
 				} else {
 					drugId = exists.getId();
 				}
-				sql = "SELECT * FROM doses WHERE symptom = \"" + symptom + "\" AND form = '" + form + "' AND id = " + drugId;
-				rs = db.select(sql);
+				if (symptom != null && form != null && dosage != null) {
+					sql = "SELECT * FROM doses WHERE symptom = \"" + symptom + "\" AND form = '" + form + "' AND id = " + drugId;
+					rs = db.select(sql);
 				
-				if (rs.next()) {
-					msg += "Symptom, " + symptom + ", already existed with form " + form + " for drug, " + drug + ". You can update it using uri http://{address}:8182/drugs/update/{drugId}/.\n";
+					if (rs.next()) {
+						msg += "Symptom, " + symptom + ", already existed with form " + form + " for drug, " + drug + ". You can update it using uri http://{address}:8182/drugs/update/{drugId}/.\n";
 					
-				} else {
-					msg += "Symptom, " + symptom + " added to drug, " + drug + "\n";
-					sql = "INSERT INTO doses VALUES (" + drugId + ", '" + symptom + "', '" + dosage + "', '" + form + "', '" + threeToSix + "', '" +
-							sixToTen + "', '" + tenToFifteen + "', '" + fifteenToTwenty + "', '" + twentyToTwenty_nine + "')";
-					db.insert(sql);
+					} else {
+						sql = "INSERT INTO doses VALUES (" + drugId + ", '" + symptom + "', '" + dosage + "', '" + form + "', '" + threeToSix + "', '" +
+								sixToTen + "', '" + tenToFifteen + "', '" + fifteenToTwenty + "', '" + twentyToTwenty_nine + "')";
+						db.insert(sql);
+						Dose dose = new Dose();
+						dose.setDrugId(String.valueOf(drugId));
+						dose.setSymptom(symptom);
+						dose.setDosage(dosage);
+						dose.setForm(form);
+						dose.setThreeToSix(threeToSix);
+						dose.setSixToTen(sixToTen);
+						dose.setTenToFifteen(tenToFifteen);
+						dose.setFifteenToTwenty(fifteenToTwenty);
+						dose.setTwentyToTwenty_nine(twentyToTwenty_nine);
+						Drugs.addDose(dose);
+						msg += "Dose, " + dose + " added to drug, " + drug + "\n";
+					}
 				}
 				
 			} catch (SQLException se) {

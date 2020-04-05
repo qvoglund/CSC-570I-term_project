@@ -6,11 +6,11 @@ public class Dose {
     private String dosage;
     private String form;
     private String symptom;
-	private String threeToSix;
-    private String sixToTen;
-    private String tenToFifteen;
-    private String fifteenToTwenty;
-    private String twentyToTwenty_nine;
+	private String threeToSix = "";
+    private String sixToTen = "";
+    private String tenToFifteen = "";
+    private String fifteenToTwenty = "";
+    private String twentyToTwenty_nine = "";
     
 
     public Dose() { }
@@ -73,11 +73,6 @@ public class Dose {
 		this.doseId.equals(((Dose) dose).getDoseId()) &&
 	    this.dosage.equals(((Dose) dose).getDosage()) &&
 	    this.form.equals(((Dose) dose).getForm()) &&
-	    this.symptom.equals(((Dose) dose).getSymptom()) &&
-	    this.threeToSix.equals(((Dose) dose).getThreeToSix()) &&
-	    this.sixToTen.equals(((Dose) dose).getSixToTen()) &&
-	    this.tenToFifteen.equals(((Dose) dose).getTenToFifteen()) &&
-	    this.fifteenToTwenty.equals(((Dose) dose).getFifteenToTwenty()) &&
-	    this.twentyToTwenty_nine.equals(((Dose) dose).getTwentyToTwenty_nine());
+	    this.symptom.equals(((Dose) dose).getSymptom());
 	}
 }

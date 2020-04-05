@@ -14,7 +14,6 @@ public class Drugs {
 
     public static String toPlain() {
 		String retval = "";
-		int i = 1;
 		for (Drug drug : drugs) retval += drug.toString() + "\n";
 		return retval;
     }
@@ -48,6 +47,8 @@ public class Drugs {
     public static Dose findDose(int id, String symptom, String form, String dosage) {
     	Dose dose = null;
     	for (Dose d : doses) {
+    		//System.out.println(id + " " + symptom + " " + form + " " + dosage);
+    		//System.out.println(d.getDrugId() + " " + d.getSymptom() + " " + d.getForm() + " " + d.getDosage());
     		if (d.getDrugId().equals(String.valueOf(id)) && d.getSymptom().equals(symptom) &&
     			d.getForm().equals(form) && d.getDosage().equals(dosage)) {
     			dose = d;
