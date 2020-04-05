@@ -73,6 +73,11 @@ public class Dose {
 		this.doseId.equals(((Dose) dose).getDoseId()) &&
 	    this.dosage.equals(((Dose) dose).getDosage()) &&
 	    this.form.equals(((Dose) dose).getForm()) &&
-	    this.symptom.equals(((Dose) dose).getSymptom());
+	    this.symptom.equals(((Dose) dose).getSymptom()) &&
+	    this.threeToSix.equals(((Dose) dose).getThreeToSix()) &&
+	    this.sixToTen.equals(((Dose) dose).getSixToTen()) &&
+	    this.tenToFifteen.equals(((Dose) dose).getTenToFifteen()) &&
+	    this.fifteenToTwenty.equals(((Dose) dose).getFifteenToTwenty()) &&
+	    this.twentyToTwenty_nine.equals(((Dose) dose).getTwentyToTwenty_nine());
 	}
 }

@@ -80,11 +80,11 @@ public class CreateResource extends ServerResource {
 						dose.setSymptom(symptom);
 						dose.setDosage(dosage);
 						dose.setForm(form);
-						dose.setThreeToSix(threeToSix);
-						dose.setSixToTen(sixToTen);
-						dose.setTenToFifteen(tenToFifteen);
-						dose.setFifteenToTwenty(fifteenToTwenty);
-						dose.setTwentyToTwenty_nine(twentyToTwenty_nine);
+						dose.setThreeToSix(threeToSix != null ? threeToSix : "");
+						dose.setSixToTen(sixToTen != null ? sixToTen : "");
+						dose.setTenToFifteen(tenToFifteen != null ? tenToFifteen : "");
+						dose.setFifteenToTwenty(fifteenToTwenty != null ? fifteenToTwenty : "");
+						dose.setTwentyToTwenty_nine(twentyToTwenty_nine != null ? twentyToTwenty_nine : "");
 						Drugs.addDose(dose);
 						msg += "Dose, " + dose + " added to drug, " + drug + "\n";
 					}
